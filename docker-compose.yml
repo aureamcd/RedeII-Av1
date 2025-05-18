@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  roteador0:
+    build: .
+    container_name: roteador0
+    command: ["python3","-u", "/app/roteador.py", "0"]
+    privileged: true
+    networks:
+      roteador_net:
+        ipv4_address: 172.28.0.10
+        aliases:
+          - roteador0
+
+  roteador1:
+    build: .
+    container_name: roteador1
+    command: ["python3","-u", "/app/roteador.py", "1"]
+    privileged: true
+    networks:
+      roteador_net:
+        ipv4_address: 172.28.0.11
+        aliases:
+          - roteador1
+
+  roteador2:
+    build: .
+    container_name: roteador2
+    command: ["python3","-u", "/app/roteador.py", "2"]
+    privileged: true
+    networks:
+      roteador_net:
+        ipv4_address: 172.28.0.12
+        aliases:
+          - roteador2
+
+  roteador3:
+    build: .
+    container_name: roteador3
+    command: ["python3","-u", "/app/roteador.py", "3"]
+    privileged: true
+    networks:
+      roteador_net:
+        ipv4_address: 172.28.0.13
+        aliases:
+          - roteador3
+
+  roteador4:
+    build: .
+    container_name: roteador4
+    command: ["python3","-u", "/app/roteador.py", "4"]
+    privileged: true
+    networks:
+      roteador_net:
+        ipv4_address: 172.28.0.14
+        aliases:
+          - roteador4
+
+networks:
+  roteador_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

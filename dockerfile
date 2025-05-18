@@ -1,0 +1,11 @@
+# Dockerfile
+FROM python:3.10-slim
+
+RUN apt update && apt install -y iproute2 iputils-ping net-tools
+
+WORKDIR /app
+
+COPY roteador.py ./roteador.py
+COPY topologia ./topologia
+
+CMD ["python3", "-u", "/app/roteador.py", "0"]
