@@ -4,57 +4,167 @@ services:
   roteador0:
     build: .
     container_name: roteador0
-    command: ["python3","-u", "/app/roteador.py", "0"]
+    command: ["python3", "-u", "/app/roteador.py", "0"]
     privileged: true
     networks:
+      rede0:
+        ipv4_address: 10.0.0.1
       roteador_net:
         ipv4_address: 172.28.0.10
-        aliases:
-          - roteador0
 
   roteador1:
     build: .
     container_name: roteador1
-    command: ["python3","-u", "/app/roteador.py", "1"]
+    command: ["python3", "-u", "/app/roteador.py", "1"]
     privileged: true
     networks:
+      rede1:
+        ipv4_address: 10.0.1.1
       roteador_net:
         ipv4_address: 172.28.0.11
-        aliases:
-          - roteador1
 
   roteador2:
     build: .
     container_name: roteador2
-    command: ["python3","-u", "/app/roteador.py", "2"]
+    command: ["python3", "-u", "/app/roteador.py", "2"]
     privileged: true
     networks:
+      rede2:
+        ipv4_address: 10.0.2.1
       roteador_net:
         ipv4_address: 172.28.0.12
-        aliases:
-          - roteador2
 
   roteador3:
     build: .
     container_name: roteador3
-    command: ["python3","-u", "/app/roteador.py", "3"]
+    command: ["python3", "-u", "/app/roteador.py", "3"]
     privileged: true
     networks:
+      rede3:
+        ipv4_address: 10.0.3.1
       roteador_net:
         ipv4_address: 172.28.0.13
-        aliases:
-          - roteador3
 
   roteador4:
     build: .
     container_name: roteador4
-    command: ["python3","-u", "/app/roteador.py", "4"]
+    command: ["python3", "-u", "/app/roteador.py", "4"]
     privileged: true
     networks:
+      rede4:
+        ipv4_address: 10.0.4.1
       roteador_net:
         ipv4_address: 172.28.0.14
-        aliases:
-          - roteador4
+
+  host0a:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host0a
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.0.1 && tail -f /dev/null"]
+    networks:
+      rede0:
+        ipv4_address: 10.0.0.10
+
+  host0b:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host0b
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.0.1 && tail -f /dev/null"]
+    networks:
+      rede0:
+        ipv4_address: 10.0.0.11
+
+  host1a:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host1a
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.1.1 && tail -f /dev/null"]
+    networks:
+      rede1:
+        ipv4_address: 10.0.1.10
+
+  host1b:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host1b
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.1.1 && tail -f /dev/null"]
+    networks:
+      rede1:
+        ipv4_address: 10.0.1.11
+
+  host2a:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host2a
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.2.1 && tail -f /dev/null"]
+    networks:
+      rede2:
+        ipv4_address: 10.0.2.10
+
+  host2b:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host2b
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.2.1 && tail -f /dev/null"]
+    networks:
+      rede2:
+        ipv4_address: 10.0.2.11
+
+  host3a:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host3a
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.3.1 && tail -f /dev/null"]
+    networks:
+      rede3:
+        ipv4_address: 10.0.3.10
+
+  host3b:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host3b
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.3.1 && tail -f /dev/null"]
+    networks:
+      rede3:
+        ipv4_address: 10.0.3.11
+
+  host4a:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host4a
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.4.1 && tail -f /dev/null"]
+    networks:
+      rede4:
+        ipv4_address: 10.0.4.10
+
+  host4b:
+    build:
+      context: .
+      dockerfile: Dockerfile.host
+    container_name: host4b
+    privileged: true
+    command: ["sh", "-c", "ip route replace default via 10.0.4.1 && tail -f /dev/null"]
+    networks:
+      rede4:
+        ipv4_address: 10.0.4.11
 
 networks:
   roteador_net:
@@ -62,3 +172,33 @@ networks:
     ipam:
       config:
         - subnet: 172.28.0.0/16
+
+  rede0:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/24
+
+  rede1:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.1.0/24
+
+  rede2:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24
+
+  rede3:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.3.0/24
+
+  rede4:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.4.0/24

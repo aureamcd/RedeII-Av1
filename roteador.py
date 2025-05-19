@@ -4,24 +4,37 @@ import json
 import time
 import sys
 import heapq
-import subprocess
+import os
 
-PORTA_BASE = 5000  # Cada roteador escuta em 5000 + ID
+PORTA_BASE = 5000  # Base das portas UDP dos roteadores
 
 class Roteador:
     def __init__(self, id_roteador):
         self.id = id_roteador
-        print(f"[{self.id}] Inicializando roteador...")
-
         self.porta = PORTA_BASE + id_roteador
-        self.lsdb = {}  # Base de dados de estado de enlace
+        self.lsdb = {}
+        self.tabela_rotas = {}
+
+        self.id_para_ip = {
+            0: "172.28.0.10",
+            1: "172.28.0.11",
+            2: "172.28.0.12",
+            3: "172.28.0.13",
+            4: "172.28.0.14"
+        }
+
+        print(f"[{self.id}] Inicializando roteador...")
 
         self.vizinhos = self.carregar_vizinhos()
         print(f"[{self.id}] Vizinhos carregados: {self.vizinhos}")
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind(("0.0.0.0", self.porta))
-        print(f"[{self.id}] Socket UDP ligado na porta {self.porta}")
+        try:
+            self.sock.bind(("0.0.0.0", self.porta))
+            print(f"[{self.id}] Socket ligado na porta {self.porta}")
+        except OSError as e:
+            print(f"[{self.id}] ⚠ Erro ao ligar socket: {e}")
+            sys.exit(1)
 
     def carregar_vizinhos(self):
         try:
@@ -31,21 +44,6 @@ class Roteador:
         except Exception as e:
             print(f"[{self.id}] ⚠ Erro ao carregar vizinhos: {e}")
             return []
-
-    def enviar_hello(self):
-        while True:
-            for vizinho in self.vizinhos:
-                destino = (f"roteador{vizinho['id']}", PORTA_BASE + vizinho["id"])
-                hello = {
-                    "tipo": "HELLO",
-                    "origem": self.id
-                }
-                try:
-                    self.sock.sendto(json.dumps(hello).encode(), destino)
-                    print(f"[{self.id}] Enviou HELLO para {vizinho['id']}")
-                except Exception as e:
-                    print(f"[{self.id}] ⚠ Erro ao enviar HELLO para {vizinho['id']}: {e}")
-            time.sleep(5)
 
     def enviar_lsa(self):
         while True:
@@ -58,7 +56,7 @@ class Roteador:
             mensagem = json.dumps(lsa).encode()
 
             for vizinho in self.vizinhos:
-                destino = (f"roteador{vizinho['id']}", PORTA_BASE + vizinho["id"])
+                destino = ("127.0.0.1", PORTA_BASE + vizinho["id"])
                 try:
                     self.sock.sendto(mensagem, destino)
                     print(f"[{self.id}] Enviou LSA para {vizinho['id']}")
@@ -70,8 +68,6 @@ class Roteador:
         while True:
             try:
                 dados, addr = self.sock.recvfrom(4096)
-                print(f"[{self.id}] 🔍 Recebeu bruto: {dados}")
-
                 pacote = json.loads(dados.decode())
 
                 if pacote["tipo"] == "LSA":
@@ -80,41 +76,20 @@ class Roteador:
                         self.lsdb[origem] = pacote["vizinhos"]
                         print(f"[{self.id}] Atualizou LSDB com LSA de {origem}: {pacote['vizinhos']}")
                         self.calcular_rotas()
-
-                elif pacote["tipo"] == "HELLO":
-                    origem = pacote["origem"]
-                    print(f"[{self.id}] Recebeu HELLO de {origem}")
-                    resposta = {
-                        "tipo": "HELLO_ACK",
-                        "origem": self.id
-                    }
-                    destino = (f"roteador{origem}", PORTA_BASE + origem)
-                    self.sock.sendto(json.dumps(resposta).encode(), destino)
-
-                elif pacote["tipo"] == "HELLO_ACK":
-                    origem = pacote["origem"]
-                    print(f"[{self.id}] Recebeu HELLO_ACK de {origem}")
-
             except Exception as e:
                 print(f"[{self.id}] ⚠ Erro ao receber pacote: {e}")
-
-    def iniciar(self):
-        print(f"[{self.id}] Iniciando threads de envio e recepção...")
-        threading.Thread(target=self.enviar_hello, daemon=True).start()
-        threading.Thread(target=self.enviar_lsa, daemon=True).start()
-        self.receber()
 
     def calcular_rotas(self):
         print(f"[{self.id}] 🧠 Calculando rotas com base na LSDB...")
 
-        # Construir grafo a partir da LSDB
+        # Construir grafo
         grafo = {}
         for origem, vizinhos in self.lsdb.items():
             grafo[origem] = {}
             for v in vizinhos:
                 grafo[origem][v["id"]] = v["custo"]
 
-        # Incluir os próprios vizinhos
+        # Adiciona os próprios vizinhos (caso não estejam na LSDB ainda)
         grafo[self.id] = {}
         for v in self.vizinhos:
             grafo[self.id][v["id"]] = v["custo"]
@@ -147,23 +122,34 @@ class Roteador:
             if prox is not None:
                 tabela[destino] = prox
 
+        self.tabela_rotas = tabela
+        self.instalar_rotas()
+
         print(f"[{self.id}] 📡 Tabela de roteamento:")
         for dest, prox in tabela.items():
             print(f"  Destino: {dest} → Próximo salto: {prox}")
 
-        # Instalar rotas reais usando ip route
-        for destino, prox in tabela.items():
-            subrede_destino = f"10.0.{destino}.0/24"
-            via_ip = f"10.0.{prox}.1"
-            try:
-                subprocess.run(
-                    ["ip", "route", "replace", subrede_destino, "via", via_ip],
-                    check=True
-                )
-                print(f"[{self.id}] ➕ Rota adicionada: {subrede_destino} via {via_ip}")
-            except Exception as e:
-                print(f"[{self.id}] ⚠ Erro ao adicionar rota: {e}")
+    def instalar_rotas(self):
+        for destino, proximo_salto in self.tabela_rotas.items():
+            via_ip = self.id_para_ip[proximo_salto]
+            destino_rede = f"10.0.{destino}.0/24"
 
+            # Verifica se rota já existe antes de adicionar
+            saida = os.popen(f"ip route show {destino_rede}").read()
+            if destino_rede in saida:
+                continue  # Já existe
+
+            comando = f"ip route add {destino_rede} via {via_ip}"
+            resultado = os.system(comando)
+            if resultado == 0:
+                print(f"[{self.id}] ➕ Rota adicionada: {destino_rede} via {via_ip}")
+            else:
+                print(f"[{self.id}] ⚠ Erro ao adicionar rota para {destino_rede}")
+
+    def iniciar(self):
+        print(f"[{self.id}] Iniciando threads...")
+        threading.Thread(target=self.enviar_lsa, daemon=True).start()
+        self.receber()
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

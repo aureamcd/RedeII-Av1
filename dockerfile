@@ -8,4 +8,6 @@ WORKDIR /app
 COPY roteador.py ./roteador.py
 COPY topologia ./topologia
 
+USER root
+
 CMD ["python3", "-u", "/app/roteador.py", "0"]
