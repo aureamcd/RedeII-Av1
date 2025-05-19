@@ -2,12 +2,8 @@
   "id": 4,
   "vizinhos": [
     {
-      "id": 3,
-      "custo": 4
-    },
-    {
-      "id": 2,
-      "custo": 10
+      "id": 0,
+      "custo": 7
     }
   ]
 }

@@ -11,3 +11,4 @@ COPY topologia ./topologia
 USER root
 
 CMD ["python3", "-u", "/app/roteador.py", "0"]
+

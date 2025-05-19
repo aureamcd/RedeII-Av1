@@ -1,60 +1,69 @@
-version: '3.8'
-
 services:
   roteador0:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.router
     container_name: roteador0
     command: ["python3", "-u", "/app/roteador.py", "0"]
     privileged: true
     networks:
+      roteador_net:
+        ipv4_address: 10.100.0.10
       rede0:
         ipv4_address: 10.0.0.1
-      roteador_net:
-        ipv4_address: 172.30.0.10
 
   roteador1:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.router
     container_name: roteador1
     command: ["python3", "-u", "/app/roteador.py", "1"]
     privileged: true
     networks:
+      roteador_net:
+        ipv4_address: 10.100.0.11
       rede1:
         ipv4_address: 10.0.1.1
-      roteador_net:
-        ipv4_address: 172.30.0.11
 
   roteador2:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.router
     container_name: roteador2
     command: ["python3", "-u", "/app/roteador.py", "2"]
     privileged: true
     networks:
+      roteador_net:
+        ipv4_address: 10.100.0.12
       rede2:
         ipv4_address: 10.0.2.1
-      roteador_net:
-        ipv4_address: 172.30.0.12
 
   roteador3:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.router
     container_name: roteador3
     command: ["python3", "-u", "/app/roteador.py", "3"]
     privileged: true
     networks:
+      roteador_net:
+        ipv4_address: 10.100.0.13
       rede3:
         ipv4_address: 10.0.3.1
-      roteador_net:
-        ipv4_address: 172.30.0.13
 
   roteador4:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.router
     container_name: roteador4
     command: ["python3", "-u", "/app/roteador.py", "4"]
     privileged: true
     networks:
+      roteador_net:
+        ipv4_address: 10.100.0.14
       rede4:
         ipv4_address: 10.0.4.1
-      roteador_net:
-        ipv4_address: 172.30.0.14
+
 
   host0a:
     build:
@@ -171,7 +180,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.30.0.0/16
+        - subnet: 10.100.0.0/24
 
   rede0:
     driver: bridge
