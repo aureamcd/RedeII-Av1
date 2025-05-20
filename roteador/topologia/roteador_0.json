@@ -1,13 +1,13 @@
 {
-  "id": 4,
+  "id": 0,
   "vizinhos": [
     {
-      "id": 0,
-      "custo": 8
+      "id": 4,
+      "custo": 9
     },
     {
       "id": 2,
-      "custo": 9
+      "custo": 2
     }
   ]
 }
