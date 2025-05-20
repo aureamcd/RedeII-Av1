@@ -48,4 +48,5 @@ nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 
 plt.title("Topologia da Rede de Roteadores")
 plt.show()
+plt.savefig("topologia/diagrama_rede.png")
 
