@@ -68,6 +68,7 @@ bash
 Copiar
 Editar
 docker exec -it host0a ping 10.0.4.10
+
 📡 Justificativa do Protocolo (UDP)
 Foi escolhido o protocolo UDP para a troca de pacotes de controle (Hello e LSA) entre os roteadores pelos seguintes motivos:
 

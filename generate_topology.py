@@ -25,7 +25,7 @@ for node in G.nodes():
         peso = G[node][vizinho]['weight']
         vizinhos.append({'id': vizinho, 'custo': peso})
     
-    with open(f"topologia/roteador_{node}.json", "w") as f:
+    with open(f"topologia/roteador_{node+1}.json", "w") as f:
         json.dump({"id": node, "vizinhos": vizinhos}, f, indent=2)
 
 # Também salva grafo completo (opcional)

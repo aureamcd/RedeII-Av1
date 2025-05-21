@@ -7,14 +7,14 @@ RUN apt update && apt install -y \
     iputils-ping \
     net-tools \
     procps \
-    && apt clean
-
+    && apt clean \
+    echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
 # Define o diretório de trabalho
 WORKDIR /app
 
 # Copia o código-fonte e topologia
 COPY roteador.py ./roteador.py
-COPY topologia ./topologia
+COPY topologia /app/topologia
 
 # Garante que estamos como root (para alterar rotas e IP forwarding)
 USER root
